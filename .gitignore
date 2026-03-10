@@ -1,0 +1,45 @@
+# === SENSITIVE - KHÔNG PUSH LÊN GITHUB ===
+context.md
+.env
+*.env
+
+# === Data files (quá lớn) ===
+*.csv
+/data/
+data/macro_cache/
+
+# === Model files (trained weights) ===
+/models/
+*.zip
+*.pkl
+
+# === Logs ===
+logs/
+tb_logs/
+*.log
+
+# === Test/debug files ===
+test_debug.py
+backtest_results.txt
+optimization_results.json
+
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
