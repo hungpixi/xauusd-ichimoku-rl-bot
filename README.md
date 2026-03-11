@@ -1,256 +1,155 @@
-# 🤖 XAUUSD AI Trading Bot — Ichimoku Multi-Timeframe RL
+# 🥇 XAUUSD Ichimoku RL Trading Bot
 
-> **RL (PPO) Trading Bot cho XAUUSD** sử dụng chiến lược Ichimoku Cloud Break trên 4 timeframes đồng thời (M5/M15/H1/H4).  
-> Inspired by [MoonDev's DRL Trading Bot](https://github.com/forbbiden403/tradingbot) — nhưng **Ichimoku là core**, không phải generic indicators.
+> Train AI tự học chiến lược Ichimoku để trade vàng (XAUUSD), xuất ra file `.mq5` chạy thẳng trên MetaTrader 5.
 
+[![PyPI](https://img.shields.io/pypi/v/xauusd-ichi-rl?color=orange&label=pip%20install%20xauusd-ichi-rl)](https://pypi.org/project/xauusd-ichi-rl/)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://python.org)
-[![PyPI](https://img.shields.io/pypi/v/xauusd-ichi-rl?color=orange)](https://pypi.org/project/xauusd-ichi-rl/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/AI%20Assisted-Antigravity-purple)](https://comarai.com)
 
 ---
 
-## ⚡ Install
+## 🎯 Kết Quả (Test tháng 1/2026)
+
+| | |
+|--|--|
+| 💰 Lợi nhuận | **+$724 (+7.12%)** trên tài khoản $500 |
+| 📈 Win Rate | **86.7%** (cứ 10 lệnh thắng 8-9) |
+| 📉 Drawdown tối đa | **0.12%** (rủi ro rất thấp) |
+| ⚡ Thời gian train | **24 phút** (500,000 bước học) |
+
+> ⚠️ Kết quả backtest, không đảm bảo lợi nhuận thực tế. Cần kiểm tra thêm trước khi dùng live.
+
+---
+
+## ⚡ Bắt Đầu Trong 3 Bước
+
+### Bước 1 — Cài đặt
 
 ```bash
 pip install xauusd-ichi-rl
 ```
 
-### CLI Commands
+### Bước 2 — Lấy data
+
+Tải file CSV mẫu trong thư mục [`sample_data/`](sample_data/) về, đặt vào thư mục làm việc:
+
+```
+📂 thư mục của bạn/
+├── XAUUSD_2025_10.csv   ← train
+├── XAUUSD_2025_11.csv   ← train
+├── XAUUSD_2025_12.csv   ← train
+└── XAUUSD_2026_01.csv   ← test
+```
+
+> 💡 File CSV là dữ liệu nến M1 (1 phút) XAUUSD từ Exness MT5. Bạn có thể tự export từ MT5 của mình.
+
+### Bước 3 — Chạy
 
 ```bash
-# 1. Train RL bot (cần file CSV XAUUSD M1 trong thư mục hiện tại)
+# Train AI (24 phút)
 ichi-train --timesteps 500000 --sl 5.0 --tp 3.0
 
-# 2. Rule-based backtest + grid search optimizer
+# Tìm config tốt nhất
 ichi-backtest --mode optimize --year 2026 --month 01
 
-# 3. Generate file MQL5 EA (output → mql5_output/)
-ichi-gen-mql5
-# ↑ Ra IchiMTF_RL_Strategy.mq5 — copy vào MT5 Experts/ là dùng được!
-```
-
-> 💡 **Workflow**: `ichi-train` → `ichi-backtest` → `ichi-gen-mql5` → Copy `.mq5` vào MetaTrader 5
-
-> 🐍 **Python API**:
-> ```python
-> from xauusd_ichi import run_v2, generate_all
-> result = run_v2(timesteps=500_000, sl=5.0, tp=3.0)
-> ```
-
----
-
-## 📊 Kết Quả Backtest — Jan 2026 (Out-of-Sample)
-
-| Metric | Giá trị | Benchmark |
-|--------|---------|-----------|
-| **Net Profit** | **+$724 (+7.12%)** | MoonDev target: 5-7.5%/month |
-| **Profit Factor** | **3.76** | Industry good: >1.5 |
-| **Win Rate** | **86.7%** | MoonDev: 58-62% |
-| **Max Drawdown** | **0.12%** | MoonDev: 8-12% |
-| **Total Trades** | 406 | ~20/day |
-| **Consecutive Wins** | 36 | |
-| **Training Time** | 24 phút | 500k steps, 348 it/s |
-
-> ⚠️ **Disclaimer**: Kết quả quá khứ không đảm bảo hiệu suất tương lai. Test chỉ trên 1 tháng, cần validate thêm.
-
----
-
-## 🧠 Tư Duy & Điểm Khác Biệt
-
-### So với MoonDev (forbbiden403/tradingbot):
-
-| | MoonDev | Bot này |
-|---|--------|---------|
-| **Core Strategy** | 63 generic indicators | **Ichimoku Cloud Break** (từ EA thực chiến) |
-| **Entry Logic** | RL tự quyết 100% | RL + **Ichimoku signal bias** trong reward |
-| **SL/TP** | RL tự học cắt lỗ | **Built-in SL/TP** (grid search optimized) |
-| **DCA** | Không | **DCA awareness** (từ EA IchiDCA) |
-| **Speed** | ~35 it/s | **348 it/s** (pre-cached numpy arrays) |
-| **Features** | 140+ | **128** (focused, less noise) |
-
-### Quá trình phát triển (3 iterations):
-
-```
-v1: RL + Ichimoku only (M5)          → LỖ -4.95% ❌
-    └─ Insight: 50 features, 1 TF không đủ edge
-    
-v1.5: Rule-based Ichimoku + Grid Search → LỖ -$65 ❌  
-    └─ Insight: Ichimoku đơn lẻ trên M5 = quá nhiều noise
-    
-v2: RL + Multi-TF (M5/M15/H1/H4)    → LÃI +7.12% ✅
-    └─ Insight: Multi-TF confirmation + RL flexibility = edge
-```
-
-### Key Insights:
-1. **Ichimoku cần multi-TF**: M5 quá noisy, cần H1/H4 confirm trend
-2. **Built-in SL/TP > RL-learned SL/TP**: RL mất quá nhiều steps để học risk management
-3. **Numpy pre-cache**: Tăng speed 10x (35 → 348 it/s) bằng cách bỏ pandas.iloc
-4. **128 features > 140+ features**: Focused features (Ichimoku core) < noise reduction
-
----
-
-## 🏗️ Kiến Trúc
-
-```
-┌─────────────────────────────────────────────┐
-│           Multi-TF Feature Engine            │
-│  M1 Data → Resample → M5, M15, H1, H4      │
-│                                              │
-│  Per TF: Ichimoku│EMA│RSI│MACD│ATR│BB│ADX    │
-│  + Sessions    + Price Returns               │
-│  ─────────────────────────────────           │
-│  → 128 features (forward-fill merge)         │
-└──────────────────┬──────────────────────────┘
-                   │
-┌──────────────────▼──────────────────────────┐
-│         Trading Environment (Gym)            │
-│  • Pre-cached numpy arrays (fast!)           │
-│  • Built-in SL=$5 / TP=$3                    │
-│  • Ichimoku-aware reward (Sharpe)            │
-│  • Cooldown 5 bars (anti-overtrading)        │
-└──────────────────┬──────────────────────────┘
-                   │
-┌──────────────────▼──────────────────────────┐
-│            PPO Agent (SB3)                   │
-│  • Network: [256, 256]                       │
-│  • 500k steps, n_steps=1024                  │
-│  • Live metrics callback (pass tracking)     │
-│  • Auto-save best checkpoint                 │
-└──────────────────┬──────────────────────────┘
-                   │
-┌──────────────────▼──────────────────────────┐
-│         MT5-Style Report                     │
-│  PF│WR│DD│Sharpe│Recovery│Consecutive│MFE/MAE│
-└─────────────────────────────────────────────┘
-```
-
----
-
-## 🚀 Quick Start
-
-### Option A: Via PyPI (recommended)
-```bash
-pip install xauusd-ichi-rl
-
-# Đặt file CSV vào thư mục rồi chạy:
-ichi-train --timesteps 500000 --sl 5.0 --tp 3.0
-ichi-backtest --mode optimize --year 2026 --month 01
+# Xuất file .mq5 → dùng trên MetaTrader 5
 ichi-gen-mql5
 ```
 
-### Option B: Clone & Run
-```bash
-git clone https://github.com/hungpixi/xauusd-ichimoku-rl-bot
-cd xauusd-ichimoku-rl-bot
-pip install -r requirements.txt
-```
-
-### Prepare Data
-Đặt file XAUUSD M1 CSV vào root:
-```
-XAUUSD_2025_10.csv  # Train
-XAUUSD_2025_11.csv  # Train
-XAUUSD_2025_12.csv  # Train
-XAUUSD_2026_01.csv  # Test
-```
-
-### Train + Test (1 lệnh)
-```bash
-python run_rl_v2.py --timesteps 500000 --sl 5.0 --tp 3.0
-# hoặc:
-ichi-train --timesteps 500000 --sl 5.0 --tp 3.0
-```
-
-### Rule-Based Backtest + Grid Search
-```bash
-# Optimize SL/TP
-ichi-backtest --mode optimize --year 2026 --month 01
-
-# Single backtest
-ichi-backtest --mode backtest --year 2026 --month 01 --sl 5 --tp 3
-```
+**Kết quả**: File `mql5_output/IchiMTF_RL_Strategy.mq5` → copy vào MT5 `MQL5/Experts/` → compile → attach vào chart **XAUUSD M5** là xong!
 
 ---
 
-## 📁 Cấu Trúc
+## 🤔 Bot Này Hoạt Động Như Thế Nào?
 
 ```
-src/
-├── data/
-│   ├── data_loader.py          # Load CSV data
-│   ├── resampler.py            # M1 → M5/M15/H1/H4
-│   ├── multi_tf_engine.py      # ★ Multi-TF feature builder (128 features)
-│   ├── ichimoku_features.py    # Ichimoku indicator calculations
-│   └── macro_data.py           # DXY/VIX from Yahoo Finance
-├── env/
-│   └── trading_env.py          # ★ Gymnasium env (numpy-optimized, SL/TP)
-├── strategy/
-│   └── ichimoku_strategy.py    # ★ Rule-based strategy + grid search
-├── models/
-│   └── mt5_report.py           # MT5 Strategy Tester report format
-└── rbi/
-    └── progressive_validation.py # Progressive validation runner
-
-run_rl_v2.py                    # ★ Main: Train + Test (1 command)
-run_backtest.py                 # Rule-based backtest + optimizer
+Data M1 XAUUSD
+    ↓
+Tính 128 chỉ báo (Ichimoku + EMA + RSI + MACD... trên 4 khung thời gian)
+    ↓
+AI (PPO) học cách đọc các chỉ báo đó → quyết định mua/bán
+    ↓
+Xuất quyết định thành file .mq5 chạy được trên MetaTrader 5
 ```
 
----
-
-## 🔮 Hướng Phát Triển
-
-- [ ] **Macro data integration**: DXY/VIX correlation (fix merge bug)
-- [ ] **Grid search SL/TP**: Tìm SL/TP tối ưu cho RL
-- [ ] **Multi-month validation**: Test trên 2025 full (12 tháng)
-- [ ] **DCA logic**: Dollar Cost Averaging từ EA IchiDCA gốc
-- [ ] **Live trading**: MetaTrader 5 integration
-- [ ] **Dreamer V3**: World-model RL (more sample efficient)
+**Điểm khác so với bot khác:**
+- Ichimoku là nền tảng (không phải chỉ là 1 trong 100 chỉ báo)
+- 4 khung thời gian cùng lúc: M5 để vào lệnh, H1/H4 để lọc xu hướng
+- SL/TP cố định ($5/$3) thay vì để AI tự học → ổn định hơn
 
 ---
 
-## 📚 References
+## 📂 Dữ Liệu Mẫu
 
-- [forbbiden403/tradingbot](https://github.com/forbbiden403/tradingbot) — MoonDev's DRL Trading Bot (inspiration)
-- [IchiDCA_CCBSN_PropFirm.mq5](docs/) — EA MQL5 gốc (Ichimoku + DCA + CCBSN)
-- [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3) — PPO implementation
-- [Gymnasium](https://gymnasium.farama.org/) — RL environment
+Thư mục [`sample_data/`](sample_data/) có **1 tuần** dữ liệu XAUUSD M1 để thử nghiệm nhanh.
+
+Muốn train đầy đủ cần tải thêm dữ liệu từ MT5:
+1. Mở MT5 → History Center
+2. Chọn XAUUSD, khung M1
+3. Export ra CSV theo từng tháng
 
 ---
 
-## 🤝 Bạn muốn Bot Trading AI tương tự?
+## 🔧 Cấu Hình Mặc Định
+
+| Tham số | Giá trị | Giải thích |
+|---------|---------|-----------|
+| `--sl` | `5.0` | Stop Loss $5 mỗi lệnh |
+| `--tp` | `3.0` | Take Profit $3 mỗi lệnh |
+| `--timesteps` | `500000` | Số bước train AI |
+| `--balance` | `500.0` | Vốn tham chiếu |
+| `--lot` | `0.05` | Khối lượng giao dịch |
+
+---
+
+## 📋 Lịch Sử Phát Triển
+
+| Phiên bản | Kết quả | Vấn đề |
+|-----------|---------|--------|
+| v1: RL + Ichimoku M5 | -4.95% ❌ | Chỉ 1 khung thời gian = quá nhiều nhiễu |
+| v1.5: Rule-based M5 | -$65 ❌ | Không có xu hướng dài hạn |
+| **v2: RL + 4 TF** | **+7.12% ✅** | Multi-TF + AI linh hoạt = có lợi thế |
+
+---
+
+## 🔮 Kế Hoạch Tiếp Theo
+
+- [ ] Tích hợp dữ liệu macro (DXY, VIX)
+- [ ] Validate trên 12 tháng 2025
+- [ ] Kết nối live trading với MT5
+- [ ] Logic DCA (Dollar Cost Averaging)
+
+---
+
+## 📚 Tham Khảo
+
+- [MoonDev's DRL Bot](https://github.com/forbbiden403/tradingbot) — Nguồn cảm hứng
+- [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3) — Thuật toán PPO
+- [Gymnasium](https://gymnasium.farama.org/) — Môi trường RL
+
+---
+
+## 🤝 Bạn Muốn Bot Trading AI Tương Tự?
 
 | Bạn cần | Chúng tôi đã làm ✅ |
 |---------|---------------------|
-| Bot trade tự động | RL Bot XAUUSD multi-TF |
-| Backtest nhanh | Grid search 576 combos trong vài giây |
-| Báo cáo chuyên nghiệp | MT5 Strategy Tester format |
-| Tối ưu chiến lược | Multi-indicator + multi-timeframe |
+| Bot trade tự động cho MT5 | RL Bot XAUUSD multi-TF |
+| Backtest nhanh với báo cáo | Grid search 576 combos |
+| Tối ưu chiến lược Ichimoku | Multi-TF + SL/TP tối ưu |
 
 <table>
 <tr>
-<td align="center">
-<a href="https://comarai.com"><b>🌐 Yêu cầu Demo</b></a>
-</td>
-<td align="center">
-<a href="https://zalo.me/0834422439"><b>💬 Zalo</b></a>
-</td>
-<td align="center">
-<a href="mailto:hungphamphunguyen@gmail.com"><b>📧 Email</b></a>
-</td>
+<td align="center"><a href="https://comarai.com"><b>🌐 Demo</b></a></td>
+<td align="center"><a href="https://zalo.me/0834422439"><b>💬 Zalo</b></a></td>
+<td align="center"><a href="mailto:hungphamphunguyen@gmail.com"><b>📧 Email</b></a></td>
 </tr>
 </table>
 
-### [Comarai](https://comarai.com) — Companion for Marketing & AI Automation
+**[Comarai](https://comarai.com)** — AI Automation Agency | 4 nhân viên AI chạy 24/7: Em Trade 🤖 · Em Content 📝 · Em Marketing 📢 · Em Sale 💼
 
-> *"Thời gian là tài sản quý nhất. Để AI làm những việc lặp lại, bạn tập trung vào chiến lược."*
+> *"Thời gian là tài sản quý nhất. Để AI làm những việc lặp lại, bạn tập trung vào chiến lược."*  
 > — Phạm Phú Nguyễn Hưng, Founder
-
-**4 nhân viên AI chạy 24/7:**
-- 🤖 **Em Trade** — Bot trading tự cải tiến
-- 📝 **Em Content** — Sáng tạo nội dung
-- 📢 **Em Marketing** — Automation marketing
-- 💼 **Em Sale** — Tìm kiếm khách hàng
 
 ---
 

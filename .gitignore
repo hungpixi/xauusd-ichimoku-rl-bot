@@ -7,6 +7,9 @@ context.md
 *.csv
 /data/
 data/macro_cache/
+# Ngoại lệ: sample data được phép push
+!sample_data/
+!sample_data/*.csv
 
 # === Model files (trained weights) ===
 /models/
