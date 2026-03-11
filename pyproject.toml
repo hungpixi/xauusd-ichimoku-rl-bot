@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "xauusd-ichi-rl"
+version = "2.1.0"
+description = "XAUUSD Ichimoku Multi-Timeframe RL Trading Bot — Train, Backtest, Generate MQL5 EA"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Phạm Phú Nguyễn Hưng", email = "hungphamphunguyen@gmail.com"},
+]
+keywords = ["trading", "forex", "xauusd", "ichimoku", "reinforcement-learning", "mql5", "metatrader"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "gymnasium>=0.29",
+    "stable-baselines3>=2.0",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "torch>=2.0",
+    "tqdm>=4.65",
+]
+
+[project.optional-dependencies]
+dashboard = ["streamlit>=1.28", "plotly>=5.15"]
+tensorboard = ["tensorboard>=2.14"]
+all = ["streamlit>=1.28", "plotly>=5.15", "tensorboard>=2.14"]
+
+[project.urls]
+Homepage = "https://github.com/hungpixi/xauusd-ichimoku-rl-bot"
+Repository = "https://github.com/hungpixi/xauusd-ichimoku-rl-bot"
+"Bug Tracker" = "https://github.com/hungpixi/xauusd-ichimoku-rl-bot/issues"
+Website = "https://comarai.com"
+
+[project.scripts]
+ichi-train = "xauusd_ichi.cli:train"
+ichi-backtest = "xauusd_ichi.cli:backtest"
+ichi-gen-mql5 = "xauusd_ichi.cli:gen_mql5"
+
+[tool.hatch.build.targets.wheel]
+# Include cả src/ package và mql5_output/ templates
+packages = ["src/xauusd_ichi"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE",
+    "requirements.txt",
+]
+exclude = [
+    "*.csv",
+    "models/",
+    "logs/",
+    "context.md",
+    ".env",
+]

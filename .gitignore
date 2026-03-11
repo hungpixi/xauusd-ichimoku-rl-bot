@@ -22,6 +22,14 @@ tb_logs/
 test_debug.py
 backtest_results.txt
 optimization_results.json
+compare_*.json
+compare_*.txt
+compare_results.json
+compare_output.txt
+rl_v2_run.txt
+optimizer_out.txt
+reality_check_results.json
+*_out.txt
 
 # === Python ===
 __pycache__/

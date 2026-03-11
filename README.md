@@ -4,8 +4,39 @@
 > Inspired by [MoonDev's DRL Trading Bot](https://github.com/forbbiden403/tradingbot) — nhưng **Ichimoku là core**, không phải generic indicators.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://python.org)
+[![PyPI](https://img.shields.io/pypi/v/xauusd-ichi-rl?color=orange)](https://pypi.org/project/xauusd-ichi-rl/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Made with AI](https://img.shields.io/badge/AI%20Assisted-Antigravity-purple)](https://comarai.com)
+
+---
+
+## ⚡ Install
+
+```bash
+pip install xauusd-ichi-rl
+```
+
+### CLI Commands
+
+```bash
+# 1. Train RL bot (cần file CSV XAUUSD M1 trong thư mục hiện tại)
+ichi-train --timesteps 500000 --sl 5.0 --tp 3.0
+
+# 2. Rule-based backtest + grid search optimizer
+ichi-backtest --mode optimize --year 2026 --month 01
+
+# 3. Generate file MQL5 EA (output → mql5_output/)
+ichi-gen-mql5
+# ↑ Ra IchiMTF_RL_Strategy.mq5 — copy vào MT5 Experts/ là dùng được!
+```
+
+> 💡 **Workflow**: `ichi-train` → `ichi-backtest` → `ichi-gen-mql5` → Copy `.mq5` vào MetaTrader 5
+
+> 🐍 **Python API**:
+> ```python
+> from xauusd_ichi import run_v2, generate_all
+> result = run_v2(timesteps=500_000, sl=5.0, tp=3.0)
+> ```
 
 ---
 
@@ -98,12 +129,24 @@ v2: RL + Multi-TF (M5/M15/H1/H4)    → LÃI +7.12% ✅
 
 ## 🚀 Quick Start
 
-### 1. Install
+### Option A: Via PyPI (recommended)
 ```bash
+pip install xauusd-ichi-rl
+
+# Đặt file CSV vào thư mục rồi chạy:
+ichi-train --timesteps 500000 --sl 5.0 --tp 3.0
+ichi-backtest --mode optimize --year 2026 --month 01
+ichi-gen-mql5
+```
+
+### Option B: Clone & Run
+```bash
+git clone https://github.com/hungpixi/xauusd-ichimoku-rl-bot
+cd xauusd-ichimoku-rl-bot
 pip install -r requirements.txt
 ```
 
-### 2. Prepare Data
+### Prepare Data
 Đặt file XAUUSD M1 CSV vào root:
 ```
 XAUUSD_2025_10.csv  # Train
@@ -112,18 +155,20 @@ XAUUSD_2025_12.csv  # Train
 XAUUSD_2026_01.csv  # Test
 ```
 
-### 3. Train + Test (1 lệnh)
+### Train + Test (1 lệnh)
 ```bash
 python run_rl_v2.py --timesteps 500000 --sl 5.0 --tp 3.0
+# hoặc:
+ichi-train --timesteps 500000 --sl 5.0 --tp 3.0
 ```
 
-### 4. Rule-Based Backtest + Grid Search
+### Rule-Based Backtest + Grid Search
 ```bash
 # Optimize SL/TP
-python run_backtest.py --mode optimize --year 2026 --month 01
+ichi-backtest --mode optimize --year 2026 --month 01
 
 # Single backtest
-python run_backtest.py --mode backtest --year 2026 --month 01 --sl 5 --tp 3
+ichi-backtest --mode backtest --year 2026 --month 01 --sl 5 --tp 3
 ```
 
 ---
